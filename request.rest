@@ -19,6 +19,10 @@ Content-Type: application/json
 GET {{baseUrl}}/post
 Content-Type: application/json
 
+### GET posts by sender
+GET {{baseUrl}}/post?sender=Hadar Lachmy
+Content-Type: application/json
+
 ### GET post by ID
 GET {{baseUrl}}/post/697a63f33abc75f1bfe568ca
 Content-Type: application/json
