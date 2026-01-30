@@ -1,0 +1,38 @@
+### Base URL
+@baseUrl = http://localhost:3000
+
+### =============================================
+### POSTS API ENDPOINTS
+### =============================================
+
+### CREATE a new post
+POST {{baseUrl}}/posts
+Content-Type: application/json
+
+{
+  "title": "strawberry cake",
+  "publisher": "Hadar Lachmy",
+  "content": "I'm looking for a good recipe for strawberry cake."
+}
+
+### GET all posts
+GET {{baseUrl}}/posts
+Content-Type: application/json
+
+### GET post by ID
+GET {{baseUrl}}/posts/697a63f33abc75f1bfe568ca
+Content-Type: application/json
+
+### UPDATE a post
+PUT {{baseUrl}}/posts/697a63f33abc75f1bfe568ca
+Content-Type: application/json
+
+{
+  "title": "Updated strawberry cake",
+  "publisher": "Hadar Lachmy",
+  "content": "Updated recipe for strawberry cake."
+}
+
+### DELETE a post
+DELETE {{baseUrl}}/posts/697a63f33abc75f1bfe568ca
+Content-Type: application/json
