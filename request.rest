@@ -36,7 +36,3 @@ Content-Type: application/json
   "publisher": "Hadar Lachmy",
   "content": "Updated recipe for strawberry cake."
 }
-
-### DELETE a post
-DELETE {{baseUrl}}/post/697a63f33abc75f1bfe568ca
-Content-Type: application/json
