@@ -1,8 +1,15 @@
 import PostModel from "../models/postModel.js";
 
 const getAllPosts = async (req, res) => {
+  const sender = req.query.sender;
+
   try {
-    const posts = await PostModel.find();
+    let posts;
+    if (sender) {
+      posts = await PostModel.find({ publisher: sender });
+    } else {
+      posts = await PostModel.find();
+    }
     res.status(200).send(posts);
   } catch (error) {
     res.status(400).send(error.message);
@@ -30,6 +37,21 @@ const getPostById = async (req, res) => {
       return res.status(404).send("Post not found");
     }
     res.status(200).send(post);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+const getPostsBySender = async (req, res) => {
+  const sender = req.query.sender;
+
+  if (!sender) {
+    return res.status(400).send("Sender parameter is required");
+  }
+
+  try {
+    const posts = await PostModel.find({ publisher: sender });
+    res.status(200).send(posts);
   } catch (error) {
     res.status(400).send(error.message);
   }
