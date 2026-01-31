@@ -1,16 +1,18 @@
 import PostModel from "../models/postModel.js";
 
+
+const updateFields = ["content", "title"];
+const filterFields = ["sender"];
+
 const getAllPosts = async (req, res) => {
   const sender = req.query.sender;
 
   try {
-    let posts;
-    if (sender) {
-      posts = await PostModel.find({ publisher: sender });
-    } else {
-      posts = await PostModel.find();
+    const filter = {};
+    for (const field of filterFields) {
+      if (req.query[field]) filter[field] = req.query[field];
     }
-    res.status(200).send(posts);
+    res.send(await PostModel.find(filter));
   } catch (error) {
     res.status(400).send(error.message);
   }
@@ -59,16 +61,26 @@ const getPostsBySender = async (req, res) => {
 
 const updatePost = async (req, res) => {
   const postId = req.params.id;
-  const updateBody = req.body;
+  const postBody = {};
+    for (const field of updateFields) {
+      if (req.body[field]) postBody[field] = req.body[field];
+    }
+
+  if (!postId || Object.keys(postBody).length == 0) {
+    res.status(400).send("Request required post Id and updated Post")
+    return;
+  }
 
   try {
-    const post = await PostModel.findByIdAndUpdate(postId, updateBody, { new: true });
-    if (!post) {
-      return res.status(404).send("Post not found");
+    const post = await PostModel.findByIdAndUpdate(postId, postBody);
+
+    if (post) {
+      res.status(200).send(post);
+    } else {
+      res.status(404).send("Post not found");
     }
-    res.status(200).send(post);
   } catch (error) {
-    res.status(400).send(error.message);
+    res.status(500).send(error.message);
   }
 };
 
