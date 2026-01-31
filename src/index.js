@@ -19,6 +19,9 @@ app.use(urlencoded({ extended: true }));
 import postsRoute from "./routes/postRoutes.js";
 app.use("/post", postsRoute);
 
+import commentsRoute from "./routes/commentRoutes.js";
+app.use("/comments", commentsRoute);
+
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
 });
