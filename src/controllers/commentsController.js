@@ -10,4 +10,37 @@ const createComment = async (req, res) => {
   }
 };
 
-export { createComment };
+const getCommentById = async (req, res) => {
+  const commentId = req.params.id;
+
+  if (!commentId) {
+    res.status(400).send("Comment Id is missing");
+  }
+
+  try {
+    const comment = await CommentModel.findById(commentId);
+    if (comment) {
+      res.send(comment);
+    } else {
+      res.status(404).send("Comment not found");
+    }
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+};
+
+const getAllComments = async (req, res) => {
+  const postId = req.query.postId;
+
+  try {
+    const filter = {};
+    if (postId) filter.postId = postId;
+
+    const comments = await CommentModel.find(filter);
+    res.send(comments);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+export { createComment, getCommentById, getAllComments };

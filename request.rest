@@ -36,3 +36,26 @@ Content-Type: application/json
   "publisher": "Hadar Lachmy",
   "content": "Updated recipe for strawberry cake."
 }
+
+
+### Get Comment By Post ID
+
+GET http://localhost:3000/comments/?postId=673c88b56b1c980fce4558b0
+
+### Get Comment By ID (Does not exist)
+
+GET http://localhost:3000/comments/673ca4bcfb3be23fb7217851
+
+### Get Comment By ID
+
+GET http://localhost:3000/comments/673ca4bcfb3be23fb7217852
+
+### Create Comment
+
+POST http://localhost:3000/comments content-type: application/json
+
+{
+	"postId": "673c88b56b1c980fce4558b0",
+	"sender": "Tal eyal",
+	"content": "i am looking for pets."
+}
