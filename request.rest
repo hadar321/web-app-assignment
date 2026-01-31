@@ -59,3 +59,23 @@ POST http://localhost:3000/comments content-type: application/json
 	"sender": "Tal eyal",
 	"content": "i am looking for pets."
 }
+
+### Update comment's sender
+
+PUT http://localhost:3000/comments/673ca4bcfb3be23fb3217852 content-type: application/json
+
+{
+"sender": "tal"
+}
+
+### Update comment's content
+
+PUT http://localhost:3000/posts/674ca4bcfb3be23fb7217852 content-type: application/json
+
+{
+"content": "looking for recipe"
+}
+
+### Delete Comment By ID
+
+DELETE http://localhost:3000/comments/674ca4bcfb3be23fb7217852
