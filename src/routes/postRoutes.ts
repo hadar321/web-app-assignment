@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { getAllPosts, createPost, getPostById, updatePost } from "../controllers/postsController.js";
+import postsController from "../controllers/postsController.js";
 
 const router = Router();
-router.get("/", getAllPosts);
-router.post("/", createPost);
-router.get("/:id", getPostById);
-router.put("/:id", updatePost);
+router.get("/", postsController.getAll);
+router.post("/", postsController.create);
+router.get("/:id", postsController.getById);
+router.put("/:id", postsController.update);
 
 export default router;

@@ -1,102 +1,45 @@
+import commentsModel, { IComment } from "../models/commentsModel.js";
 import { Request, Response } from "express";
-import CommentModel from "../models/commentsModel.js";
-import { Types } from "mongoose";
+import BaseController from "./baseController.js";
+import postModel from "../models/postModel.js";
+import userModel from "../models/userModel.js";
 
-const updateFields = ["content"];
-const filterFields = ["postId", "sender"];
-
-export const createComment = async (req: Request, res: Response) => {
-  try {
-    const comment = await CommentModel.create(req.body);
-
-    return res.status(201).send(comment);
-  } catch (error: any) {
-    return res.status(500).send(error.message);
-  }
-};
-
-export const getCommentById = async (req: Request, res: Response) => {
-  const commentId = req.params.id;
-
-  if (!commentId) {
-    res.status(400).send("Comment Id is missing");
-    return;
+class CommentsController extends BaseController<IComment> {
+  constructor() {
+    super(commentsModel);
   }
 
-  try {
-    const comment = await CommentModel.findById(commentId);
-    if (comment) {
-      res.send(comment);
-    } else {
-      res.status(404).send("Comment not found");
-    }
-  } catch (error: any) {
-    res.status(500).send(error.message);
-  }
-};
-
-export const getAllComments = async (req: Request, res: Response) => {
-  try {
-    const filter: any = {};
-    for (const field of filterFields) {
-      if (req.query[field]) {
-        // For postId, convert to ObjectId if provided
-        if (field === "postId") {
-          try {
-            filter[field] = new Types.ObjectId(String(req.query[field]));
-          } catch (e) {
-            return res.status(400).send("Invalid postId");
-          }
-        } else {
-          filter[field] = req.query[field];
+  async create(req: Request, res: Response) {
+    try {
+      if (req.body.postId) {
+        if (!(await postModel.findById(req.body.postId))) {
+          res.status(400).send("Post not found");
+          return;
         }
       }
+
+      if (req.body.sender) {
+        if (!(await userModel.findById(req.body.sender))) {
+          res.status(400).send("Sender not found");
+          return;
+        }
+      }
+
+      await super.create(req, res);
+    } catch (error) {
+      res.status(400).send(error);
     }
-
-    const comments = await CommentModel.find(filter);
-    res.send(comments);
-  } catch (error: any) {
-    res.status(400).send(error.message);
-  }
-};
-
-export const updateComment = async (req: Request, res: Response) => {
-  const commentId = req.params.id;
-  const commentData: any = {};
-  for (const field of updateFields) {
-    if (req.body[field]) commentData[field] = req.body[field];
   }
 
-  if (!commentId || Object.keys(commentData).length == 0) {
-    res.status(400).send("Request required comment Id and updated comment");
-    return;
+  getFilterFields() {
+    return ["sender", "postId"];
   }
 
-  try {
-    const comment = await CommentModel.findByIdAndUpdate(commentId, commentData, { new: true });
-
-    if (comment) {
-      res.status(200).send(comment);
-    } else {
-      res.status(404).send("Comment not found");
-    }
-  } catch (error: any) {
-    res.status(500).send(error.message);
+  getUpdateFields() {
+    return ["content"];
   }
-};
 
-export const deleteComment = async (req: Request, res: Response) => {
-  const commentId = req.params.id;
+}
+export default new CommentsController();
 
-  try {
-    const comment = await CommentModel.findByIdAndDelete(commentId);
 
-    if (comment) {
-      res.status(200).send(comment);
-    } else {
-      res.status(404).send("Comment not found");
-    }
-  } catch (error: any) {
-    res.status(400).send(error.message);
-  }
-};

@@ -11,7 +11,7 @@ Content-Type: application/json
 
 {
   "title": "strawberry cake",
-  "publisher": "Hadar Lachmy",
+  "sender": "Hadar Lachmy",
   "content": "I'm looking for a good recipe for strawberry cake."
 }
 
@@ -33,7 +33,7 @@ Content-Type: application/json
 
 {
   "title": "Updated strawberry cake",
-  "publisher": "Hadar Lachmy",
+  "sender": "Hadar Lachmy",
   "content": "Updated recipe for strawberry cake."
 }
 
