@@ -6,7 +6,7 @@
 ### =============================================
 
 ### CREATE a new post
-POST {{baseUrl}}/post
+POST {{baseUrl}}/posts
 Content-Type: application/json
 
 {
@@ -16,19 +16,19 @@ Content-Type: application/json
 }
 
 ### GET all posts
-GET {{baseUrl}}/post
+GET {{baseUrl}}/posts
 Content-Type: application/json
 
 ### GET posts by sender
-GET {{baseUrl}}/post?sender=Hadar Lachmy
+GET {{baseUrl}}/posts?sender=Hadar Lachmy
 Content-Type: application/json
 
 ### GET post by ID
-GET {{baseUrl}}/post/697a63f33abc75f1bfe568ca
+GET {{baseUrl}}/posts/697a63f33abc75f1bfe568ca
 Content-Type: application/json
 
 ### UPDATE a post
-PUT {{baseUrl}}/post/697a63f33abc75f1bfe568ca
+PUT {{baseUrl}}/posts/697a63f33abc75f1bfe568ca
 Content-Type: application/json
 
 {
