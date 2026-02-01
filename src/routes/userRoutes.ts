@@ -1,6 +1,7 @@
-import express from "express";
-const router = express.Router();
-import usersController from "../controllers/usersController";
+import { Router } from "express";
+import usersController, { authMiddleware } from "../controllers/usersController";
+const router = Router();
+router.use(authMiddleware);
 
 router.get("/", usersController.getAll);
 

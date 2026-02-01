@@ -18,12 +18,7 @@ class CommentsController extends BaseController<IComment> {
         }
       }
 
-      if (req.body.sender) {
-        if (!(await userModel.findById(req.body.sender))) {
-          res.status(400).send("Sender not found");
-          return;
-        }
-      }
+      req.body.sender = res.locals.userId;
 
       await super.create(req, res);
     } catch (error) {
@@ -38,8 +33,5 @@ class CommentsController extends BaseController<IComment> {
   getUpdateFields() {
     return ["content"];
   }
-
 }
 export default new CommentsController();
-
-
