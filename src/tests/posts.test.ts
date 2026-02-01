@@ -1,48 +1,21 @@
-import supertest, { Agent } from "supertest";
+import request from "supertest";
 import initApp from "../server";
 import mongoose from "mongoose";
 import postModel from "../models/postModel";
 import { Express } from "express";
-import userModel, { IUser } from "../models/userModel";
 
 var app: Express;
-var request: Agent;
 
 beforeAll(async () => {
   console.log("beforeAll");
   app = await initApp();
   await postModel.deleteMany();
-  await userModel.deleteMany();
-
-  type UserLogin = {
-    _id?: string;
-    email: string;
-    password: string;
-  };
-
-  type UserRegister = UserLogin & {
-    username: string;
-    avatarURL: string;
-  };
-
-  const user: UserLogin = {
-    email: "test@user.com",
-    password: "testpassword",
-  };
-
-  const UserRegisterInstance: UserRegister = {
-    email: "test@user.com",
-    password: "testpassword",
-    username: "Batman",
-    avatarURL: "/public/some.png",
-  };
-  await supertest(app).post("/auth/register").send(UserRegisterInstance);
-  const res = await supertest(app).post("/auth/login").send(user);
-  userId = res.body._id;
-  const token = res.body.accessToken;
-  expect(token).toBeDefined();
-
-  request = supertest.agent(app).set({ authorization: token });
+  const userResponse = await request(app).post("/users").send({
+    username: "Hadar",
+    email: "H@gmail.com",
+    password: "secret",
+  });
+  post.sender = userResponse.body._id;
 });
 
 afterAll((done) => {
@@ -51,161 +24,153 @@ afterAll((done) => {
   done();
 });
 
-let userId = "";
 let postId = "";
 const post = {
-  breed: "Test Post",
+  title: "Test Post",
   content: "Test Content",
+  sender: "",
 };
 
 describe("Posts Tests", () => {
   test("Posts test get all", async () => {
-    const response = await request.get("/posts");
+    const response = await request(app).get("/posts");
     expect(response.statusCode).toBe(200);
+    expect(response.body.length).toBe(0);
   });
 
   test("Test Create Post", async () => {
-    const response = await request.post("/posts").send(post);
+    const response = await request(app).post("/posts").send(post);
     expect(response.statusCode).toBe(201);
-    expect(response.body.breed).toBe(post.breed);
+    expect(response.body.title).toBe(post.title);
     expect(response.body.content).toBe(post.content);
-    expect(response.body.userId).toBe(userId);
+    expect(response.body.sender).toBe(post.sender);
     postId = response.body._id;
   });
 
-  test("Test Create Post without breed", async () => {
-    const { breed: breed, ...rest } = post;
-    const response = await request.post("/posts").send(rest);
+  test("Test Create Post without title", async () => {
+    const { title, ...rest } = post;
+    const response = await request(app).post("/posts").send(rest);
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe(
-      "Posts validation failed: breed: Path `breed` is required."
+      "Posts validation failed: title: Path `title` is required."
     );
   });
 
-  test("Test Create Post with breed of empty string", async () => {
-    const response = await request.post("/posts").send({ ...post, breed: "" });
+  test("Test Create Post without sender", async () => {
+    const { sender, ...rest } = post;
+    const response = await request(app).post("/posts").send(rest);
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe(
-      "Posts validation failed: breed: Path `breed` is required."
+      "Posts validation failed: sender: Path `sender` is required."
     );
   });
 
-  test("Test Create Post without content", async () => {
-    const { content, ...rest } = post;
-    const response = await request.post("/posts").send(rest);
-    expect(response.statusCode).toBe(400);
-    expect(response.body.message).toBe(
-      "Posts validation failed: content: Path `content` is required."
-    );
-  });
-
-  test("Test Create Post with content of empty string", async () => {
-    const response = await request
+  test("Test Create Post with title of empty string", async () => {
+    const response = await request(app)
       .post("/posts")
-      .send({ ...post, content: "" });
+      .send({ ...post, title: "" });
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe(
-      "Posts validation failed: content: Path `content` is required."
+      "Posts validation failed: title: Path `title` is required."
     );
   });
 
-  test("Test get post by userId", async () => {
-    const response = await request.get(`/posts?userId=${userId}`);
+  test("Test Create Post with sender of empty string", async () => {
+    const response = await request(app)
+      .post("/posts")
+      .send({ ...post, sender: "" });
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe(
+      "Posts validation failed: sender: Path `sender` is required."
+    );
+  });
+
+  test("Test get post by sender", async () => {
+    const response = await request(app).get(`/posts?sender=${post.sender}`);
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(1);
-    expect(response.body[0].breed).toBe(post.breed);
+    expect(response.body[0].title).toBe(post.title);
     expect(response.body[0].content).toBe(post.content);
-    expect(response.body[0].userId).toBe(userId);
+    expect(response.body[0].sender).toBe(post.sender);
   });
 
   test("Test get post by id", async () => {
-    const response = await request.get(`/posts/${postId}`);
+    const response = await request(app).get(`/posts/${postId}`);
     expect(response.statusCode).toBe(200);
-    expect(response.body.breed).toBe(post.breed);
+    expect(response.body.title).toBe(post.title);
     expect(response.body.content).toBe(post.content);
-    expect(response.body.userId).toBe(userId);
+    expect(response.body.sender).toBe(post.sender);
   });
 
-  test("Test like post by id", async () => {
-    const response = await request.put(`/posts/like/${postId}`);
-    expect(response.statusCode).toBe(200);
-    expect(JSON.stringify(response.body.likeBy)).toBe(JSON.stringify([]));
-    expect(response.body.breed).toBe(post.breed);
-    expect(response.body.content).toBe(post.content);
-    expect(response.body.userId).toBe(userId);
-  });
-
-  test("Test dislike post by id", async () => {
-    const response = await request.put(`/posts/like/${postId}`);
-    expect(response.statusCode).toBe(200);
-    expect(JSON.stringify(response.body.likeBy)).toBe(JSON.stringify([`${userId}`]));
-    expect(response.body.breed).toBe(post.breed);
-    expect(response.body.content).toBe(post.content);
-    expect(response.body.userId).toBe(userId);
-  });
-
-  test("Test Update Post's breed", async () => {
-    const response = await request.put(`/posts/${postId}`).send({
-      breed: "The beginning of a new era",
+  test("Test Update Post's Title", async () => {
+    const response = await request(app).put(`/posts/${postId}`).send({
+      title: "The beginning of a new era",
     });
-    post.breed = "The beginning of a new era";
+    post.title = "The beginning of a new era";
     expect(response.statusCode).toBe(201);
-    expect(response.body.breed).toBe(post.breed);
+    expect(response.body.title).toBe(post.title);
     expect(response.body.content).toBe(post.content);
-    expect(response.body.userId).toBe(userId);
+    expect(response.body.sender).toBe(post.sender);
   });
 
   test("Test Update Post's Content", async () => {
-    const response = await request.put(`/posts/${postId}`).send({
+    const response = await request(app).put(`/posts/${postId}`).send({
       content: "Welcome back today!",
     });
     post.content = "Welcome back today!";
     expect(response.statusCode).toBe(201);
-    expect(response.body.breed).toBe(post.breed);
+    expect(response.body.title).toBe(post.title);
     expect(response.body.content).toBe(post.content);
-    expect(response.body.userId).toBe(userId);
+    expect(response.body.sender).toBe(post.sender);
   });
 
   test("Test get all posts", async () => {
-    const response = await request.get(`/posts`);
+    const response = await request(app).get(`/posts`);
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(1);
-    expect(response.body[0].breed).toBe(post.breed);
+    expect(response.body[0].title).toBe(post.title);
     expect(response.body[0].content).toBe(post.content);
-    expect(response.body[0].userId).toBe(userId);
+    expect(response.body[0].sender).toBe(post.sender);
   });
 
   test("Test Create Post 2", async () => {
-    const response = await request.post("/posts").send({
-      breed: "Test Post 2",
+    const response = await request(app).post("/posts").send({
+      title: "Test Post 2",
       content: "Test Content 2",
+      sender: post.sender,
     });
     expect(response.statusCode).toBe(201);
   });
 
   test("Posts test get all 2", async () => {
-    const response = await request.get("/posts");
+    const response = await request(app).get("/posts");
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(2);
   });
 
   test("Test Delete Post", async () => {
-    const response = await request.delete(`/posts/${postId}`);
+    const response = await request(app).delete(`/posts/${postId}`);
     expect(response.statusCode).toBe(200);
-    expect(response.body.breed).toBe(post.breed);
-    expect(response.body.content).toBe(post.content);
-    expect(response.body.userId).toBe(userId);
   });
 
   test("Test get post by id that doesn't exist", async () => {
-    const response = await request.get(`/posts/${postId}`);
+    const response = await request(app).get(`/posts/${postId}`);
     expect(response.statusCode).toBe(404);
+    expect(response.text).toBe("not found");
   });
 
   test("Test Update Post with not existing id", async () => {
-    const response = await request.put(`/posts/${postId}`).send({
-      breed: "Test Post",
+    const response = await request(app).put(`/posts/${postId}`).send({
+      title: "Test Post",
     });
     expect(response.statusCode).toBe(404);
+    expect(response.text).toBe("not found");
+  });
+
+  test("Test Create Post with sender that does not exist", async () => {
+    await request(app).delete(`/users/${post.sender}`);
+    const response = await request(app).post("/posts").send(post);
+    expect(response.statusCode).toBe(400);
+    expect(response.text).toBe("Sender not found");
   });
 });

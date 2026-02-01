@@ -1,6 +1,6 @@
-import userModel, { IUser } from "../models/userModel.js";
+import userModel, { IUser } from "../models/userModel";
 import { Request, Response } from "express";
-import BaseController from "./baseController.js";
+import BaseController from "./baseController";
 import bcrypt from "bcrypt";
 
 class UsersController extends BaseController<IUser> {

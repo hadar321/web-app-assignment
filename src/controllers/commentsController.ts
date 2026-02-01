@@ -1,8 +1,8 @@
-import commentsModel, { IComment } from "../models/commentsModel.js";
+import commentsModel, { IComment } from "../models/commentsModel";
 import { Request, Response } from "express";
-import BaseController from "./baseController.js";
-import postModel from "../models/postModel.js";
-import userModel from "../models/userModel.js";
+import BaseController from "./baseController";
+import postModel from "../models/postModel";
+import userModel from "../models/userModel";
 
 class CommentsController extends BaseController<IComment> {
   constructor() {

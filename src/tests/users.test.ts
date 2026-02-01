@@ -3,7 +3,7 @@ import initApp from "../server";
 import mongoose from "mongoose";
 import { Express } from "express";
 import bcrypt from 'bcrypt';
-import userModel from "../models/usersModel";
+import userModel from "../models/userModel";
 
 var app: Express;
 
@@ -21,8 +21,8 @@ afterAll((done) => {
 
 let userId = "";
 const user = {
-  username: "Hadar Lachmy",
-  email: "Hadar@gmail.com",
+  username: "Hadadr Hadar",
+  email: "HadarHadar@gmail.com",
   password: "secret"
 }
 describe("Users Tests", () => {

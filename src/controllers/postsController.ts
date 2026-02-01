@@ -1,18 +1,18 @@
-import CommentModel from "../models/commentsModel.js";
-import BaseController from "./baseController.js";
 import { Request, Response } from "express";
-import userModel from "../models/userModel.js";
+import postModel, { IPost } from "../models/postModel";
+import userModel from "../models/userModel";
+import BaseController from "./baseController";
 
-class CommentsController extends BaseController<any> {
+class PostsController extends BaseController<IPost> {
   constructor() {
-    super(CommentModel);
-  }  
+    super(postModel);
+  }
 
   async create(req: Request, res: Response) {
     try {
       if (req.body.sender) {
         if (!(await userModel.findById(req.body.sender))) {
-          throw new Error("sender not found");
+          throw new Error("Sender not found");
         }
       }
       await super.create(req, res);
@@ -22,12 +22,12 @@ class CommentsController extends BaseController<any> {
   }
 
   getFilterFields() {
-    return ["postId", "sender"];
+    return ["sender"];
   }
 
   getUpdateFields() {
-    return ["content"];
+    return ["title", "content"];
   }
 }
 
-export default new CommentsController();
+export default new PostsController();
