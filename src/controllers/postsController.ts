@@ -10,11 +10,7 @@ class PostsController extends BaseController<IPost> {
 
   async create(req: Request, res: Response) {
     try {
-      if (req.body.sender) {
-        if (!(await userModel.findById(req.body.sender))) {
-          throw new Error("Sender not found");
-        }
-      }
+      req.body.sender = res.locals.userId;
       await super.create(req, res);
     } catch (error) {
       res.status(400).send((error as Error).message);

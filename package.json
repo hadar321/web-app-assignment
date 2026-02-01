@@ -10,6 +10,7 @@
     "test": "jest --detectOpenHandles --forceExit --coverage --runInBand",
     "testPosts": "jest --detectOpenHandles --forceExit posts.test.ts",
     "testUsers": "jest --detectOpenHandles --forceExit users.test.ts",
+    "testAuths": "jest --detectOpenHandles --forceExit auth.test.ts",
     "testComments": "jest --detectOpenHandles --forceExit comments.test.ts"
   },
   "keywords": [],
@@ -22,6 +23,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "mongoose": "^8.8.1",
+    "jsonwebtoken": "^9.0.2",
     "supertest": "^7.2.2"
   },
   "devDependencies": {
@@ -32,6 +34,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^25.1.0",
     "@types/supertest": "^6.0.3",
+    "@types/jsonwebtoken": "^9.0.7",
     "jest": "^30.2.0",
     "nodemon": "^3.1.7",
     "ts-jest": "^29.4.6",
