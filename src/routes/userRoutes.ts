@@ -185,5 +185,5 @@ router.put("/:id", usersController.update);
  *       500:
  *         description: Server error
  */
-router.delete("/:id", usersController.delete);
+router.delete("/:id", usersController.delete); 
 export default router;
