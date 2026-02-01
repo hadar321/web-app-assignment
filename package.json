@@ -1,13 +1,16 @@
 {
   "name": "web-app-assignment",
   "version": "1.0.0",
-  "type": "module",
+  "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "dev": "node --loader ts-node/esm src/index.ts",
+    "dev": "ts-node src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --detectOpenHandles --forceExit --coverage --runInBand",
+    "testPosts": "jest --detectOpenHandles --forceExit posts.test.ts",
+    "testUsers": "jest --detectOpenHandles --forceExit users.test.ts",
+    "testComments": "jest --detectOpenHandles --forceExit comments.test.ts"
   },
   "keywords": [],
   "author": "Hadar Lachmy & Tal Eyal",
@@ -18,14 +21,20 @@
     "body-parser": "^1.20.3",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "mongoose": "^8.8.1"
+    "mongoose": "^8.8.1",
+    "supertest": "^7.2.2"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/body-parser": "^1.19.6",
     "@types/dotenv": "^8.2.3",
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "@types/node": "^25.1.0",
+    "@types/supertest": "^6.0.3",
+    "jest": "^30.2.0",
     "nodemon": "^3.1.7",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"

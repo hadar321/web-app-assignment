@@ -23,10 +23,12 @@ const { json, urlencoded } = bodyParser;
 app.use(json());
 app.use(urlencoded({ extended: true }));
 
-import postsRoute from "./routes/postRoutes.js";
-import commentsRoute from "./routes/commentRoutes.js";
+import postsRoute from "./routes/postRoutes";
+import commentsRoute from "./routes/commentRoutes";
+import usersRoute from "./routes/userRoutes";
 app.use("/posts", postsRoute);
 app.use("/comments", commentsRoute);
+app.use("/users", usersRoute);
 
 app.listen(Number(port), () => {
   console.log(`App listening at http://localhost:${port}`);
