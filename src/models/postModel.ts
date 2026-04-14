@@ -4,6 +4,7 @@ export interface IPost extends Document {
   title: string;
   content?: string;
   sender: string;
+  likedBy?: string[];
 }
 
 const postSchema = new Schema<IPost>({
@@ -18,6 +19,10 @@ const postSchema = new Schema<IPost>({
   sender: {
     type: String,
     required: true,
+  },
+  likedBy: {
+    type: [String],
+    default: [],
   },
   
 });

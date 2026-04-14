@@ -44,9 +44,11 @@ app.use(urlencoded({ extended: true }));
 import postsRoute from "./routes/postRoutes";
 import commentsRoute from "./routes/commentRoutes";
 import usersRoute from "./routes/userRoutes";
+import authRoutes from "./routes/authRoutes";
 app.use("/posts", postsRoute);
 app.use("/comments", commentsRoute);
 app.use("/users", usersRoute);
+app.use("/auth", authRoutes);
 
 app.listen(Number(port), () => {
   console.log(`App listening at http://localhost:${port}`);
