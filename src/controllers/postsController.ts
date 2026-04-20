@@ -22,7 +22,7 @@ class PostsController extends BaseController<IPost> {
   }
 
   getUpdateFields() {
-    return ["title", "content"];
+    return ["title", "content", "likedBy"];
   }
 }
 
