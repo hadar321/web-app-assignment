@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import supertest, { Agent } from "supertest"
 import initApp from "../server";
 import mongoose from "mongoose";
@@ -5,11 +7,22 @@ import postModel from "../models/postModel";
 import { Express } from "express";
 import userModel, { IUser } from "../models/userModel";
 
+const testUploadRoot = path.join(process.cwd(), "test_uploads_posts");
+
+const cleanupUploadDirs = () => {
+  if (fs.existsSync(testUploadRoot)) {
+    fs.rmSync(testUploadRoot, { recursive: true, force: true });
+  }
+};
+
 var app: Express;
 var request: Agent;
 
 beforeAll(async () => {
   console.log("beforeAll");
+  process.env.USER_PROFILE_IMAGES_DIR = path.join(testUploadRoot, "userProfileImages");
+  process.env.POST_IMAGES_DIR = path.join(testUploadRoot, "postImages");
+  cleanupUploadDirs();
   app = await initApp();
   await postModel.deleteMany();
 
@@ -33,6 +46,7 @@ beforeAll(async () => {
 
 afterAll((done) => {
   console.log("afterAll");
+  cleanupUploadDirs();
   mongoose.connection.close();
   done();
 });
@@ -153,10 +167,30 @@ describe("Posts Tests", () => {
     expect(response.statusCode).toBe(201);
   });
 
+  test("Test Create Post with image", async () => {
+    const response = await request
+      .post("/posts")
+      .field("title", "Test Post Image")
+      .field("content", "Test Content Image")
+      .attach("postImage", Buffer.from("dummy image data"), "post-image.png");
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body.postImage).toMatch(/^postImages\//);
+  });
+
+  test("Test Update Post image", async () => {
+    const response = await request
+      .put(`/posts/${postId}`)
+      .attach("postImage", Buffer.from("updated image data"), "updated-post.png");
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body.postImage).toMatch(/^postImages\//);
+  });
+
   test("Posts test get all 2", async () => {
     const response = await request.get("/posts");
     expect(response.statusCode).toBe(200);
-    expect(response.body.length).toBe(2);
+    expect(response.body.length).toBe(3);
   });
 
   test("Test Delete Post", async () => {
@@ -183,11 +217,11 @@ describe("Posts Tests", () => {
 
   // Pagination tests
   test("Test pagination - create multiple posts", async () => {
-    // Create 14 more posts to have 15 total (1 already exists from previous tests)
-    for (let i = 3; i <= 15; i++) {
+    // Create 14 more posts to have 16 total posts after deleting the original post.
+    for (let i = 1; i <= 14; i++) {
       await request.post("/posts").send({
-        title: `Test Post ${i}`,
-        content: `Test Content ${i}`,
+        title: `Page Post ${i}`,
+        content: `Page Content ${i}`,
       });
     }
   });
@@ -202,19 +236,16 @@ describe("Posts Tests", () => {
     const response = await request.get("/posts?pageNum=2&limit=5");
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(5);
-    // After deleting the first post, we have posts 2-15 (14 total)
-    // Page 2, limit 5: skip 5, take 5: posts 7-11
-    expect(response.body[0].title).toBe("Test Post 7");
-    expect(response.body[4].title).toBe("Test Post 11");
+    expect(response.body[0].title).toBe("Page Post 4");
+    expect(response.body[4].title).toBe("Page Post 8");
   });
 
   test("Test pagination - third page with limit 3", async () => {
     const response = await request.get("/posts?pageNum=3&limit=3");
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(3);
-    // Page 3, limit 3: skip 6, take 3: posts 8-10
-    expect(response.body[0].title).toBe("Test Post 8");
-    expect(response.body[2].title).toBe("Test Post 10");
+    expect(response.body[0].title).toBe("Page Post 5");
+    expect(response.body[2].title).toBe("Page Post 7");
   });
 
   test("Test pagination - page beyond available data", async () => {

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import usersController, { authMiddleware } from "../controllers/usersController";
+import { uploadProfile } from "../middleware/upload";
 const router = Router();
 router.use(authMiddleware);
 
@@ -34,11 +35,16 @@ router.use(authMiddleware);
  *         password:
  *           type: string
  *           description: The encrypted password of the user
+ *         profileImage:
+ *           type: string
+ *           format: binary
+ *           description: The URL or path to the user's profile image
  *       example:
  *         _id: 245ggofwk44234r234r23f4
  *         username: Batman
  *         email: Batman@gmail.com
  *         password: 245ggofwk44234r234r23by
+ *         profileImage: userProfileImages/1699340000000-avatar.png
  */
 /**
  * @swagger
@@ -107,7 +113,7 @@ router.get("/", usersController.getAll);
  *         description: Server error
  */
 router.get("/:id", usersController.getById);
-router.post("/", usersController.create);
+router.post("/", uploadProfile.single("profileImage"), usersController.create);
 
 /**
  * @swagger
@@ -129,7 +135,7 @@ router.post("/", usersController.create);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -142,6 +148,10 @@ router.post("/", usersController.create);
  *               password:
  *                 type: string
  *                 description: The password of the user
+ *               profileImage:
+ *                 type: string
+ *                 format: binary
+ *                 description: The profile image file for the user
  *     responses:
  *       201:
  *         description: The user after the update
@@ -154,7 +164,7 @@ router.post("/", usersController.create);
  *       500:
  *         description: Server error
  */
-router.put("/:id", usersController.update);
+router.put("/:id", uploadProfile.single("profileImage"), usersController.update);
 
 /**
  * @swagger

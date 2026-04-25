@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import supertest, { Agent } from "supertest";
 import initApp from "../server";
 import mongoose from "mongoose";
@@ -5,11 +7,22 @@ import { Express } from "express";
 import bcrypt from "bcrypt";
 import userModel from "../models/userModel";
 
+const testUploadRoot = path.join(process.cwd(), "test_uploads_users");
+
+const cleanupUploadDirs = () => {
+  if (fs.existsSync(testUploadRoot)) {
+    fs.rmSync(testUploadRoot, { recursive: true, force: true });
+  }
+};
+
 var app: Express;
 var request: Agent;
 
 beforeAll(async () => {
   console.log("beforeAll");
+  process.env.USER_PROFILE_IMAGES_DIR = path.join(testUploadRoot, "userProfileImages");
+  process.env.POST_IMAGES_DIR = path.join(testUploadRoot, "postImages");
+  cleanupUploadDirs();
   app = await initApp();
   await userModel.deleteMany();
 
@@ -24,6 +37,7 @@ beforeAll(async () => {
 
 afterAll((done) => {
   console.log("afterAll");
+  cleanupUploadDirs();
   mongoose.connection.close();
   done();
 });
@@ -73,6 +87,18 @@ describe("Users Tests", () => {
     expect(validPassword).toBe(true);
   });
 
+  test("Test register user with profile image", async () => {
+    const response = await supertest(app)
+      .post("/auth/register")
+      .field("username", "AvatarUser")
+      .field("email", "avatar@test.com")
+      .field("password", "secret")
+      .attach("profileImage", Buffer.from("dummy image data"), "avatar.png");
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body.profileImage).toMatch(/^userProfileImages\//);
+  });
+
   test("Test Update User's Username", async () => {
     const response = await request.put(`/users/${userId}`).send({
       username: "Superman",
@@ -106,12 +132,14 @@ describe("Users Tests", () => {
   test("Test get all users", async () => {
     const response = await request.get(`/users`);
     expect(response.statusCode).toBe(200);
-    expect(response.body.length).toBe(1);
-    expect(response.body[0].username).toBe(user.username);
-    expect(response.body[0].email).toBe(user.email);
+    expect(response.body.length).toBe(2);
+    const foundUser = response.body.find((u: any) => u.email === user.email);
+    expect(foundUser).toBeDefined();
+    expect(foundUser.username).toBe(user.username);
+    expect(foundUser.email).toBe(user.email);
     const validPassword = await bcrypt.compare(
       user.password,
-      response.body[0].password,
+      foundUser.password,
     );
     expect(validPassword).toBe(true);
   });

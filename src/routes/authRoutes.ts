@@ -1,5 +1,6 @@
 import { Router } from "express";
 import usersController from "../controllers/usersController";
+import { uploadProfile } from "../middleware/upload";
 
 const router = Router();
 
@@ -53,9 +54,19 @@ const router = Router();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/AuthUser'
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               profileImage:
+ *                 type: string
+ *                 format: binary
  *             required:
  *               - username
  *               - email
@@ -72,7 +83,7 @@ const router = Router();
  *       500:
  *         description: Server error
  */
-router.post("/register", usersController.create);
+router.post("/register", uploadProfile.single("profileImage"), usersController.create);
 
 /**
  * @swagger

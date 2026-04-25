@@ -11,7 +11,21 @@ class PostsController extends BaseController<IPost> {
   async create(req: Request, res: Response) {
     try {
       req.body.sender = res.locals.userId;
+      if (req.file?.filename) {
+        req.body.postImage = `postImages/${req.file.filename}`;
+      }
       await super.create(req, res);
+    } catch (error) {
+      res.status(400).send((error as Error).message);
+    }
+  }
+
+  async update(req: Request, res: Response) {
+    try {
+      if (req.file?.filename) {
+        req.body.postImage = `postImages/${req.file.filename}`;
+      }
+      await super.update(req, res);
     } catch (error) {
       res.status(400).send((error as Error).message);
     }
@@ -40,7 +54,7 @@ class PostsController extends BaseController<IPost> {
   }
 
   getUpdateFields() {
-    return ["title", "content", "likedBy"];
+    return ["title", "content", "likedBy", "postImage"];
   }
 }
 

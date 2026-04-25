@@ -120,8 +120,28 @@ class UsersController extends BaseController<IUser> {
         const hashedPassword = await bcrypt.hash(password, salt);
         req.body.password = hashedPassword;
       }
+      if (req.file?.filename) {
+        req.body.profileImage = `userProfileImages/${req.file.filename}`;
+      }
 
       await super.create(req, res);
+    } catch (error) {
+      res.status(400).send(error);
+    }
+  }
+
+  async update(req: Request, res: Response) {
+    try {
+      if (req.body.password) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+        req.body.password = hashedPassword;
+      }
+      if (req.file?.filename) {
+        req.body.profileImage = `userProfileImages/${req.file.filename}`;
+      }
+
+      await super.update(req, res);
     } catch (error) {
       res.status(400).send(error);
     }
@@ -132,7 +152,7 @@ class UsersController extends BaseController<IUser> {
   }
 
   getUpdateFields() {
-    return ["username", "email", "password"];
+    return ["username", "email", "password", "profileImage"];
   }
 
 

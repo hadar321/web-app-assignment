@@ -1,6 +1,7 @@
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import express, { Express } from "express";
+import path from "path";
 import mongoose from "mongoose";
 import commentsRoute from "./routes/commentRoutes";
 import postsRoute from "./routes/postRoutes";
@@ -35,6 +36,8 @@ const specs = swaggerJsDoc(options);
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use("/userProfileImages", express.static(path.join(process.cwd(), "userProfileImages")));
+app.use("/postImages", express.static(path.join(process.cwd(), "postImages")));
 app.use("/auth", authRoutes);
 app.use("/posts", postsRoute);
 app.use("/comments", commentsRoute);
