@@ -180,4 +180,56 @@ describe("Posts Tests", () => {
     expect(response.statusCode).toBe(404);
     expect(response.text).toBe("not found");
   });
+
+  // Pagination tests
+  test("Test pagination - create multiple posts", async () => {
+    // Create 14 more posts to have 15 total (1 already exists from previous tests)
+    for (let i = 3; i <= 15; i++) {
+      await request.post("/posts").send({
+        title: `Test Post ${i}`,
+        content: `Test Content ${i}`,
+      });
+    }
+  });
+
+  test("Test pagination - first page default limit", async () => {
+    const response = await request.get("/posts");
+    expect(response.statusCode).toBe(200);
+    expect(response.body.length).toBe(10); // Default limit is 10
+  });
+
+  test("Test pagination - second page with limit 5", async () => {
+    const response = await request.get("/posts?pageNum=2&limit=5");
+    expect(response.statusCode).toBe(200);
+    expect(response.body.length).toBe(5);
+    // After deleting the first post, we have posts 2-15 (14 total)
+    // Page 2, limit 5: skip 5, take 5: posts 7-11
+    expect(response.body[0].title).toBe("Test Post 7");
+    expect(response.body[4].title).toBe("Test Post 11");
+  });
+
+  test("Test pagination - third page with limit 3", async () => {
+    const response = await request.get("/posts?pageNum=3&limit=3");
+    expect(response.statusCode).toBe(200);
+    expect(response.body.length).toBe(3);
+    // Page 3, limit 3: skip 6, take 3: posts 8-10
+    expect(response.body[0].title).toBe("Test Post 8");
+    expect(response.body[2].title).toBe("Test Post 10");
+  });
+
+  test("Test pagination - page beyond available data", async () => {
+    const response = await request.get("/posts?pageNum=10&limit=5");
+    expect(response.statusCode).toBe(200);
+    expect(response.body.length).toBe(0); // No more posts
+  });
+
+  test("Test pagination with filtering by sender", async () => {
+    const response = await request.get(`/posts?sender=${senderId}&pageNum=1&limit=5`);
+    expect(response.statusCode).toBe(200);
+    expect(response.body.length).toBe(5);
+    // All posts should be from the same sender
+    response.body.forEach((post: any) => {
+      expect(post.sender).toBe(senderId);
+    });
+  });
 });

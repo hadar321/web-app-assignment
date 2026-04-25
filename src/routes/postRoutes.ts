@@ -57,6 +57,20 @@ router.use(authMiddleware);
  *           type: string
  *         required: false
  *         description: The sender ID to filter by the posts
+ *       - in: query
+ *         name: pageNum
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         required: false
+ *         description: The page number for pagination (starting from 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         required: false
+ *         description: The number of posts per page
  *     responses:
  *       200:
  *         description: A list of posts
