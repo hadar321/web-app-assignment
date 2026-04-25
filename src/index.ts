@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
+import cors from "cors";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
 
@@ -15,8 +16,47 @@ process.on('unhandledRejection', (err) => {
 dotenv.config();
 const port = process.env.PORT ?? "3000";
 
+function buildMongoUriFromEnv(): string {
+  const raw = process.env.DB_CONNECT ?? "";
+  const userEnv = process.env.DB_USER;
+  const passEnv = process.env.DB_PASS;
+
+  // If DB_USER/DB_PASS provided, inject them into the URI, encoding safely.
+  if (userEnv) {
+    // If raw already contains userinfo (user@), strip it first
+    const m = raw.match(/^(mongodb(?:\+srv)?:\/\/)([^@]+@)?(.+)$/);
+    if (!m) return raw;
+    const protocol = m[1];
+    const rest = m[3];
+    const user = encodeURIComponent(userEnv);
+    const pass = passEnv ? encodeURIComponent(passEnv) : undefined;
+    const auth = pass ? `${user}:${pass}@` : `${user}@`;
+    return protocol + auth + rest;
+  }
+
+  // Otherwise, if raw contains userinfo but not encoded, attempt to encode it
+  const m2 = raw.match(/^(mongodb(?:\+srv)?:\/\/)([^@]+)@(.+)$/);
+  if (m2) {
+    const protocol = m2[1];
+    const userinfo = m2[2];
+    const rest = m2[3];
+    // split userinfo into user[:pass]
+    const idx = userinfo.indexOf(":");
+    if (idx === -1) return raw;
+    const user = encodeURIComponent(userinfo.slice(0, idx));
+    const pass = encodeURIComponent(userinfo.slice(idx + 1));
+    return protocol + user + ":" + pass + "@" + rest;
+  }
+
+  return raw;
+}
+
+const dbUri = buildMongoUriFromEnv();
+const masked = dbUri.replace(/(mongodb(?:\+srv)?:\/\/)([^:]+):([^@]+)@/, (m, p1, u) => `${p1}${u}:***@`);
+console.log("Using DB_CONNECT:", masked || "(empty)");
+
 mongoose
-  .connect(process.env.DB_CONNECT ?? "")
+  .connect(dbUri)
   .then(() => console.log("Connected to database"))
   .catch((err) => console.error("DB Error:" + err));
 
@@ -40,6 +80,11 @@ app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 const { json, urlencoded } = bodyParser;
 app.use(json());
 app.use(urlencoded({ extended: true }));
+// CORS: allow frontend origin from env
+const frontendOrigin = process.env.FRONTEND_ORIGIN ?? "http://localhost:8080";
+app.use(cors({ origin: frontendOrigin, credentials: true }));
+// allow preflight for all routes
+app.options('*', cors({ origin: frontendOrigin, credentials: true }));
 
 import postsRoute from "./routes/postRoutes";
 import commentsRoute from "./routes/commentRoutes";
