@@ -81,7 +81,7 @@ const { json, urlencoded } = bodyParser;
 app.use(json());
 app.use(urlencoded({ extended: true }));
 // CORS: allow frontend origin from env
-const frontendOrigin = process.env.FRONTEND_ORIGIN ?? "http://localhost:8080";
+const frontendOrigin = process.env.FRONTEND_ORIGIN ?? "http://localhost:5173";
 app.use(cors({ origin: frontendOrigin, credentials: true }));
 // allow preflight for all routes
 app.options('*', cors({ origin: frontendOrigin, credentials: true }));
@@ -94,6 +94,7 @@ app.use("/posts", postsRoute);
 app.use("/comments", commentsRoute);
 app.use("/users", usersRoute);
 app.use("/auth", authRoutes);
+app.use("/uploads", express.static("uploads"));
 
 app.listen(Number(port), () => {
   console.log(`App listening at http://localhost:${port}`);

@@ -12,7 +12,11 @@ class PostsController extends BaseController<IPost> {
     try {
       req.body.sender = res.locals.userId;
       if (req.file?.filename) {
-        req.body.postImage = `postImages/${req.file.filename}`;
+        req.body.postImage = `uploads/${process.env.POST_IMAGES_DIR || 'postImages'}/${req.file.filename}`;
+      }
+      // Remove postImage if it's not a string
+      if (req.body.postImage && typeof req.body.postImage !== 'string') {
+        delete req.body.postImage;
       }
       await super.create(req, res);
     } catch (error) {
@@ -23,7 +27,11 @@ class PostsController extends BaseController<IPost> {
   async update(req: Request, res: Response) {
     try {
       if (req.file?.filename) {
-        req.body.postImage = `postImages/${req.file.filename}`;
+        req.body.postImage = `uploads/${process.env.POST_IMAGES_DIR || 'postImages'}/${req.file.filename}`;
+      }
+      // Remove postImage if it's not a string
+      if (req.body.postImage && typeof req.body.postImage !== 'string') {
+        delete req.body.postImage;
       }
       await super.update(req, res);
     } catch (error) {

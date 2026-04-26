@@ -16,7 +16,7 @@ const getUploadDir = (envVar: string, defaultDir: string) => {
 
 const profileStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
-    cb(null, getUploadDir("USER_PROFILE_IMAGES_DIR", "userProfileImages"));
+    cb(null, getUploadDir(path.join("uploads", process.env.USER_PROFILE_IMAGES_DIR || "userProfileImages"), "uploads/userProfileImages"));
   },
   filename: (_req, file, cb) => {
     const uniqueName = `${Date.now()}-${file.originalname}`;
@@ -26,7 +26,7 @@ const profileStorage = multer.diskStorage({
 
 const postStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
-    cb(null, getUploadDir("POST_IMAGES_DIR", "postImages"));
+    cb(null, getUploadDir(path.join("uploads", process.env.POST_IMAGES_DIR || "postImages"), "uploads/postImages"));
   },
   filename: (_req, file, cb) => {
     const uniqueName = `${Date.now()}-${file.originalname}`;

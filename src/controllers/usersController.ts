@@ -121,7 +121,11 @@ class UsersController extends BaseController<IUser> {
         req.body.password = hashedPassword;
       }
       if (req.file?.filename) {
-        req.body.profileImage = `userProfileImages/${req.file.filename}`;
+        req.body.profileImage = `uploads/${process.env.USER_PROFILE_IMAGES_DIR || 'userProfileImages'}/${req.file.filename}`;
+      }
+      // Remove profileImage if it's not a string (e.g., when body-parser incorrectly parses multipart data)
+      if (req.body.profileImage && typeof req.body.profileImage !== 'string') {
+        delete req.body.profileImage;
       }
 
       await super.create(req, res);
@@ -138,7 +142,11 @@ class UsersController extends BaseController<IUser> {
         req.body.password = hashedPassword;
       }
       if (req.file?.filename) {
-        req.body.profileImage = `userProfileImages/${req.file.filename}`;
+        req.body.profileImage = `uploads/${process.env.USER_PROFILE_IMAGES_DIR || 'userProfileImages'}/${req.file.filename}`;
+      }
+      // Remove profileImage if it's not a string
+      if (req.body.profileImage && typeof req.body.profileImage !== 'string') {
+        delete req.body.profileImage;
       }
 
       await super.update(req, res);

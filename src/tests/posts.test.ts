@@ -175,7 +175,8 @@ describe("Posts Tests", () => {
       .attach("postImage", Buffer.from("dummy image data"), "post-image.png");
 
     expect(response.statusCode).toBe(201);
-    expect(response.body.postImage).toMatch(/^postImages\//);
+    const expectedDir = (process.env.POST_IMAGES_DIR || 'postImages').replace(/\\/g, '\\\\');
+    expect(response.body.postImage).toMatch(new RegExp(`^${expectedDir}/`));
   });
 
   test("Test Update Post image", async () => {
@@ -184,7 +185,8 @@ describe("Posts Tests", () => {
       .attach("postImage", Buffer.from("updated image data"), "updated-post.png");
 
     expect(response.statusCode).toBe(201);
-    expect(response.body.postImage).toMatch(/^postImages\//);
+    const expectedDir = (process.env.POST_IMAGES_DIR || 'postImages').replace(/\\/g, '\\\\');
+    expect(response.body.postImage).toMatch(new RegExp(`^${expectedDir}/`));
   });
 
   test("Posts test get all 2", async () => {

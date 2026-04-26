@@ -52,8 +52,14 @@ const appStart = () => {
     if (!process.env.DB_CONNECT) {
       reject("DB_CONNECT is not defined in .env file");
     } else {
+      let connectionString = process.env.DB_CONNECT;
+      if (process.env.DB_USER && process.env.DB_PASS) {
+        // Insert credentials into the connection string
+        const url = new URL(connectionString.replace('mongodb://', 'http://'));
+        connectionString = `mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@${url.host}${url.pathname}`;
+      }
       mongoose
-        .connect(process.env.DB_CONNECT)
+        .connect(connectionString)
         .then(() => {
           resolve(app);
         })

@@ -96,7 +96,8 @@ describe("Users Tests", () => {
       .attach("profileImage", Buffer.from("dummy image data"), "avatar.png");
 
     expect(response.statusCode).toBe(201);
-    expect(response.body.profileImage).toMatch(/^userProfileImages\//);
+    const expectedDir = (process.env.USER_PROFILE_IMAGES_DIR || 'userProfileImages').replace(/\\/g, '\\\\');
+    expect(response.body.profileImage).toMatch(new RegExp(`^${expectedDir}/`));
   });
 
   test("Test Update User's Username", async () => {
