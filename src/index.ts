@@ -80,11 +80,26 @@ app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 const { json, urlencoded } = bodyParser;
 app.use(json());
 app.use(urlencoded({ extended: true }));
-// CORS: allow frontend origin from env
+// CORS: allow frontend origin(s)
 const frontendOrigin = process.env.FRONTEND_ORIGIN ?? "http://localhost:8080";
-app.use(cors({ origin: frontendOrigin, credentials: true }));
-// allow preflight for all routes
-app.options('*', cors({ origin: frontendOrigin, credentials: true }));
+// During development accept common local dev origins (Vite/dev server)
+const devAllowed = [frontendOrigin, "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"];
+if (process.env.NODE_ENV === "production") {
+  app.use(cors({ origin: frontendOrigin, credentials: true }));
+  app.options('*', cors({ origin: frontendOrigin, credentials: true }));
+} else {
+  // reflect origin for local development to make tooling and proxies work
+  app.use(cors({ origin: (origin, cb) => cb(null, origin ? devAllowed.includes(origin) : false), credentials: true }));
+  app.options('*', cors({ origin: (origin, cb) => cb(null, origin ? devAllowed.includes(origin) : false), credentials: true }));
+}
+
+// Simple request logger to help diagnose routing/CORS issues
+app.use((req, res, next) => {
+  try {
+    console.log('<< REQ', req.method, req.originalUrl, 'Origin:', req.headers.origin || '-', 'Referer:', req.headers.referer || '-');
+  } catch (e) {}
+  next();
+});
 
 import postsRoute from "./routes/postRoutes";
 import commentsRoute from "./routes/commentRoutes";
