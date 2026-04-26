@@ -29,7 +29,6 @@ const postSchema = new Schema<IPost>({
     type: [String],
     default: [],
   },
-  
 });
 
 const postModel = model<IPost>("Posts", postSchema);

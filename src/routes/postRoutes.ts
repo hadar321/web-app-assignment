@@ -94,6 +94,46 @@ router.get("/", postsController.getAll);
 
 /**
  * @swagger
+ * /posts/search:
+ *   get:
+ *     summary: Semantic search posts
+ *     description: Search posts using freeform natural language and return the most relevant posts along with a short AI summary.
+ *     tags:
+ *       - Posts
+ *     security:
+ *       - authorization: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Natural language query for semantic search
+ *     responses:
+ *       200:
+ *         description: Search results with relevance scores
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 query:
+ *                   type: string
+ *                 summary:
+ *                   type: string
+ *                 results:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Post'
+ *       400:
+ *         description: Invalid input
+ *       503:
+ *         description: Semantic search disabled when AI key is missing
+ */
+router.get("/search", postsController.semanticSearch);
+
+/**
+ * @swagger
  * /posts/{id}:
  *   get:
  *     summary: Get a post by ID
