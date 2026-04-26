@@ -5,6 +5,9 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
+import https from "https";
+import http from "http";
+import fs from "fs";
 
 process.on('uncaughtException', (err) => {
   console.error('uncaughtException', err);
@@ -110,6 +113,19 @@ app.use("/comments", commentsRoute);
 app.use("/users", usersRoute);
 app.use("/auth", authRoutes);
 
-app.listen(Number(port), () => {
-  console.log(`App listening at http://localhost:${port}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  console.log('development');
+  http.createServer(app).listen(Number(port), () => {
+    console.log(`App listening at http://localhost:${port}`);
+  });
+} else {
+  console.log('PRODUCTION');
+  const options = {
+    key: fs.readFileSync('./client-key.pem'),
+    cert: fs.readFileSync('./client-cert.pem')
+  };
+  const httpsPort = process.env.HTTPS_PORT || port;
+  https.createServer(options, app).listen(Number(httpsPort), () => {
+    console.log(`App listening at https://localhost:${httpsPort}`);
+  });
+}
