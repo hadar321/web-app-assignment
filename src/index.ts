@@ -100,7 +100,7 @@ if (process.env.NODE_ENV === "production") {
 app.use((req, res, next) => {
   try {
     console.log('<< REQ', req.method, req.originalUrl, 'Origin:', req.headers.origin || '-', 'Referer:', req.headers.referer || '-');
-  } catch (e) {}
+  } catch (e) { }
   next();
 });
 
@@ -112,6 +112,7 @@ app.use("/posts", postsRoute);
 app.use("/comments", commentsRoute);
 app.use("/users", usersRoute);
 app.use("/auth", authRoutes);
+app.use("/uploads", express.static("uploads"));
 
 if (process.env.NODE_ENV !== 'production') {
   console.log('development');

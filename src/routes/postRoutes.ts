@@ -1,6 +1,7 @@
 import { Router } from "express";
 import postsController from "../controllers/postsController";
 import { authMiddleware } from "../controllers/usersController";
+import { uploadPost } from "../middleware/upload";
 
 const router = Router();
 router.use(authMiddleware);
@@ -31,6 +32,10 @@ router.use(authMiddleware);
  *         content:
  *           type: string
  *           description: The content of the post
+ *         postImage:
+ *           type: string
+ *           format: binary
+ *           description: The URL or path to the post image
  *         sender:
  *           type: string
  *           description: The sender id of the post
@@ -38,8 +43,10 @@ router.use(authMiddleware);
  *         _id: 245ggofwk44234r234r23f4
  *         title: My First Post
  *         content: Batman is more then Superman by far.
+ *         postImage: postImages/1699340000000-post.png
  *         sender: 245ggofwk44234r234r23g2
  */
+
 /**
  * @swagger
  * /posts:
@@ -57,6 +64,20 @@ router.use(authMiddleware);
  *           type: string
  *         required: false
  *         description: The sender ID to filter by the posts
+ *       - in: query
+ *         name: pageNum
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         required: false
+ *         description: The page number for pagination (starting from 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         required: false
+ *         description: The number of posts per page
  *     responses:
  *       200:
  *         description: A list of posts
@@ -115,7 +136,7 @@ router.get("/:id", postsController.getById);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -125,6 +146,10 @@ router.get("/:id", postsController.getById);
  *               content:
  *                 type: string
  *                 description: The content of the post
+ *               postImage:
+ *                 type: string
+ *                 format: binary
+ *                 description: The image file for the post
  *             required:
  *               - title
  *               - content
@@ -140,7 +165,7 @@ router.get("/:id", postsController.getById);
  *       500:
  *         description: Server error
  */
-router.post("/", postsController.create);
+router.post("/", uploadPost.single("postImage"), postsController.create);
 
 /**
  * @swagger
@@ -162,7 +187,7 @@ router.post("/", postsController.create);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -172,6 +197,10 @@ router.post("/", postsController.create);
  *               content:
  *                 type: string
  *                 description: The content of the post
+ *               postImage:
+ *                 type: string
+ *                 format: binary
+ *                 description: The image file for the post
  *     responses:
  *       201:
  *         description: The post after the update
@@ -184,7 +213,7 @@ router.post("/", postsController.create);
  *       500:
  *         description: Server error
  */
-router.put("/:id", postsController.update);
+router.put("/:id", uploadPost.single("postImage"), postsController.update);
 
 /**
  * @swagger

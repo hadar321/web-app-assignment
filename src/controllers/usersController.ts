@@ -120,8 +120,36 @@ class UsersController extends BaseController<IUser> {
         const hashedPassword = await bcrypt.hash(password, salt);
         req.body.password = hashedPassword;
       }
+      if (req.file?.filename) {
+        req.body.profileImage = `uploads/${process.env.USER_PROFILE_IMAGES_DIR || 'userProfileImages'}/${req.file.filename}`;
+      }
+      // Remove profileImage if it's not a string (e.g., when body-parser incorrectly parses multipart data)
+      if (req.body.profileImage && typeof req.body.profileImage !== 'string') {
+        delete req.body.profileImage;
+      }
 
       await super.create(req, res);
+    } catch (error) {
+      res.status(400).send(error);
+    }
+  }
+
+  async update(req: Request, res: Response) {
+    try {
+      if (req.body.password) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+        req.body.password = hashedPassword;
+      }
+      if (req.file?.filename) {
+        req.body.profileImage = `uploads/${process.env.USER_PROFILE_IMAGES_DIR || 'userProfileImages'}/${req.file.filename}`;
+      }
+      // Remove profileImage if it's not a string
+      if (req.body.profileImage && typeof req.body.profileImage !== 'string') {
+        delete req.body.profileImage;
+      }
+
+      await super.update(req, res);
     } catch (error) {
       res.status(400).send(error);
     }
@@ -132,7 +160,7 @@ class UsersController extends BaseController<IUser> {
   }
 
   getUpdateFields() {
-    return ["username", "email", "password"];
+    return ["username", "email", "password", "profileImage"];
   }
 
 

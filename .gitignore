@@ -25,3 +25,5 @@ out/
 # Misc
 .cache/
 *.log
+
+/coverage/
