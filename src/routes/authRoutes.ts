@@ -125,6 +125,45 @@ router.post("/login", usersController.login);
 
 /**
  * @swagger
+ * /auth/google:
+ *   post:
+ *     summary: Google login
+ *     description: Authenticate user using Google OAuth credential
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               credential:
+ *                 type: string
+ *                 description: The Google OAuth JWT credential
+ *     responses:
+ *       200:
+ *         description: Successful login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                 refreshToken:
+ *                   type: string
+ *                 _id:
+ *                   type: string
+ *       400:
+ *         description: Invalid credential
+ *       500:
+ *         description: Server error
+ */
+router.post("/google", usersController.googleLogin);
+
+/**
+ * @swagger
  * /auth/refresh:
  *   post:
  *     summary: Refresh tokens
