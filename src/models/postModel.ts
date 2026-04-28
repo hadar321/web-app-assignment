@@ -6,6 +6,7 @@ export interface IPost extends Document {
   postImage?: string;
   sender: string;
   likedBy?: string[];
+  embedding?: number[];
 }
 
 const postSchema = new Schema<IPost>({
@@ -29,7 +30,10 @@ const postSchema = new Schema<IPost>({
     type: [String],
     default: [],
   },
-  
+  embedding: {
+    type: [Number],
+    required: false,
+  },
 });
 
 const postModel = model<IPost>("Posts", postSchema);
