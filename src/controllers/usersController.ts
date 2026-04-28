@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 
 import jwt from "jsonwebtoken";
 import { Document } from "mongoose";
+import { OAuth2Client } from "google-auth-library";
 import { tTokens } from "../types/tokens";
 import { Payload } from "../types/payload";
 import { types } from "util";
@@ -110,6 +111,7 @@ class UsersController extends BaseController<IUser> {
     this.login = this.login.bind(this);
     this.logout = this.logout.bind(this);
     this.refresh = this.refresh.bind(this);
+    this.googleLogin = this.googleLogin.bind(this);
   }
 
   async create(req: Request, res: Response) {
@@ -253,6 +255,67 @@ class UsersController extends BaseController<IUser> {
       });
     } catch (err) {
       res.status(400).send("fail");
+    }
+  }
+
+  async googleLogin(req: Request, res: Response) {
+    try {
+      const { credential } = req.body;
+      if (!credential) {
+        res.status(400).send("No credential provided");
+        return;
+      }
+      const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      if (!payload || !payload.email) {
+        res.status(400).send("Invalid Google credential");
+        return;
+      }
+
+      const { email, name, picture } = payload;
+      let user = await userModel.findOne({ email });
+
+      if (!user) {
+        const salt = await bcrypt.genSalt(10);
+        const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+        const hashedPassword = await bcrypt.hash(randomPassword, salt);
+        user = await userModel.create({
+          email: email,
+          username: name || email?.split("@")[0],
+          password: hashedPassword,
+          profileImage: picture,
+        });
+      }
+
+      if (!process.env.TOKEN_SECRET) {
+        res.status(500).send("Server Error");
+        return;
+      }
+
+      const tokens = generateToken((user._id) as string);
+      if (!tokens) {
+        res.status(500).send("Server Error");
+        return;
+      }
+
+      if (!user.refreshToken) {
+        user.refreshToken = [];
+      }
+      user.refreshToken.push(tokens.refreshToken);
+      await user.save();
+
+      res.status(200).send({
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        _id: user._id,
+      });
+    } catch (err) {
+      console.error("Google Login Error", err);
+      res.status(400).send("Google Login failed");
     }
   }
 }
