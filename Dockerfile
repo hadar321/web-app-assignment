@@ -14,5 +14,6 @@ ENV NODE_ENV=production
 COPY package.json package-lock.json* ./
 RUN npm install --omit=dev --silent
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/ecosystem.config.js ./ecosystem.config.js
 EXPOSE 3000
-CMD ["node", "dist/index.js"]
+CMD ["./node_modules/.bin/pm2-runtime", "ecosystem.config.js", "--env", "production"]

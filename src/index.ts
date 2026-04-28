@@ -5,6 +5,9 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
+import https from "https";
+import http from "http";
+import fs from "fs";
 
 process.on('uncaughtException', (err) => {
   console.error('uncaughtException', err);
@@ -80,11 +83,26 @@ app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 const { json, urlencoded } = bodyParser;
 app.use(json());
 app.use(urlencoded({ extended: true }));
-// CORS: allow frontend origin from env
-const frontendOrigin = process.env.FRONTEND_ORIGIN ?? "http://localhost:5173";
-app.use(cors({ origin: frontendOrigin, credentials: true }));
-// allow preflight for all routes
-app.options('*', cors({ origin: frontendOrigin, credentials: true }));
+// CORS: allow frontend origin(s)
+const frontendOrigin = process.env.FRONTEND_ORIGIN ?? "http://localhost:8080";
+// During development accept common local dev origins (Vite/dev server)
+const devAllowed = [frontendOrigin, "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"];
+if (process.env.NODE_ENV === "production") {
+  app.use(cors({ origin: frontendOrigin, credentials: true }));
+  app.options('*', cors({ origin: frontendOrigin, credentials: true }));
+} else {
+  // reflect origin for local development to make tooling and proxies work
+  app.use(cors({ origin: (origin, cb) => cb(null, origin ? devAllowed.includes(origin) : false), credentials: true }));
+  app.options('*', cors({ origin: (origin, cb) => cb(null, origin ? devAllowed.includes(origin) : false), credentials: true }));
+}
+
+// Simple request logger to help diagnose routing/CORS issues
+app.use((req, res, next) => {
+  try {
+    console.log('<< REQ', req.method, req.originalUrl, 'Origin:', req.headers.origin || '-', 'Referer:', req.headers.referer || '-');
+  } catch (e) { }
+  next();
+});
 
 import postsRoute from "./routes/postRoutes";
 import commentsRoute from "./routes/commentRoutes";
@@ -96,6 +114,19 @@ app.use("/users", usersRoute);
 app.use("/auth", authRoutes);
 app.use("/uploads", express.static("uploads"));
 
-app.listen(Number(port), () => {
-  console.log(`App listening at http://localhost:${port}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  console.log('development');
+  http.createServer(app).listen(Number(port), () => {
+    console.log(`App listening at http://localhost:${port}`);
+  });
+} else {
+  console.log('PRODUCTION');
+  const options = {
+    key: fs.readFileSync('./client-key.pem'),
+    cert: fs.readFileSync('./client-cert.pem')
+  };
+  const httpsPort = process.env.HTTPS_PORT || port;
+  https.createServer(options, app).listen(Number(httpsPort), () => {
+    console.log(`App listening at https://localhost:${httpsPort}`);
+  });
+}
