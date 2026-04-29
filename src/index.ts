@@ -126,19 +126,6 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(clientDistPath, "index.html"));
 });
 
-if (process.env.NODE_ENV !== 'production') {
-  console.log('development');
-  http.createServer(app).listen(Number(port), () => {
-    console.log(`App listening at http://localhost:${port}`);
-  });
-} else {
-  console.log('PRODUCTION');
-  const options = {
-    key: fs.readFileSync('./client-key.pem'),
-    cert: fs.readFileSync('./client-cert.pem')
-  };
-  const httpsPort = process.env.HTTPS_PORT || port;
-  https.createServer(options, app).listen(Number(httpsPort), () => {
-    console.log(`App listening at https://localhost:${httpsPort}`);
-  });
-}
+http.createServer(app).listen(Number(port), () => {
+  console.log(`App listening at http://localhost:${port} (NODE_ENV: ${process.env.NODE_ENV})`);
+});
