@@ -97,8 +97,9 @@ if (process.env.NODE_ENV === "production") {
   app.options('*', cors({ origin: (origin, cb) => cb(null, origin ? devAllowed.includes(origin) : false), credentials: true }));
 }
 
-// Simple request logger to help diagnose routing/CORS issues
+// Simple request logger and Security Headers
 app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
   try {
     console.log('<< REQ', req.method, req.originalUrl, 'Origin:', req.headers.origin || '-', 'Referer:', req.headers.referer || '-');
   } catch (e) { }
