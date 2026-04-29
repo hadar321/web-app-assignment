@@ -8,6 +8,7 @@ import swaggerUI from "swagger-ui-express";
 import https from "https";
 import http from "http";
 import fs from "fs";
+import path from "path";
 
 process.on('uncaughtException', (err) => {
   console.error('uncaughtException', err);
@@ -108,11 +109,22 @@ import postsRoute from "./routes/postRoutes";
 import commentsRoute from "./routes/commentRoutes";
 import usersRoute from "./routes/userRoutes";
 import authRoutes from "./routes/authRoutes";
+
 app.use("/posts", postsRoute);
 app.use("/comments", commentsRoute);
 app.use("/users", usersRoute);
 app.use("/auth", authRoutes);
 app.use("/uploads", express.static("uploads"));
+
+// Serve static files from the React app dist folder
+const clientDistPath = process.env.CLIENT_DIST_PATH || path.join(__dirname, "../../MatchTail/client/dist");
+app.use(express.static(clientDistPath));
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get("*", (req, res) => {
+  res.sendFile(path.join(clientDistPath, "index.html"));
+});
 
 if (process.env.NODE_ENV !== 'production') {
   console.log('development');
