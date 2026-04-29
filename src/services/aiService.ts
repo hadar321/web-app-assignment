@@ -47,7 +47,7 @@ export const generateAnswer = async (query: string, posts: any[]): Promise<strin
   // Using the model you specified
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-  const contextStr = posts.map((p, i) => `Source [${i + 1}] (Title: ${p.title}, Author: ${p.sender?.username || 'Unknown'}):\n${p.content}`).join("\n\n---\n\n");
+  const contextStr = posts.map((p, i) => `Source [${i + 1}] (Title: ${p.title}, Author: ${p.sender}):\n${p.content}`).join("\n\n---\n\n");
 
   const prompt = `
 אתה עוזר חכם ברשת חברתית לבעלי חיים בשם MatchTail.
