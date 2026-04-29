@@ -4,9 +4,9 @@ export interface IPost extends Document {
   title: string;
   content?: string;
   postImage?: string;
-  sender: string;
+  sender: any;
   likedBy?: string[];
-  embedding?: number[];
+  chunks?: { text: string; embedding: number[] }[];
 }
 
 const postSchema = new Schema<IPost>({
@@ -23,17 +23,20 @@ const postSchema = new Schema<IPost>({
     required: false,
   },
   sender: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: "Users",
     required: true,
   },
   likedBy: {
     type: [String],
     default: [],
   },
-  embedding: {
-    type: [Number],
-    required: false,
-  },
+  chunks: [
+    {
+      text: { type: String, required: true },
+      embedding: { type: [Number], required: true },
+    }
+  ],
 });
 
 const postModel = model<IPost>("Posts", postSchema);
