@@ -94,6 +94,33 @@ router.get("/", postsController.getAll);
 
 /**
  * @swagger
+ * /posts/smart-search:
+ *   get:
+ *     summary: Smart AI Semantic Search
+ *     description: Search posts using AI and get an AI generated answer
+ *     tags:
+ *       - Posts
+ *     security:
+ *       - authorization: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The question to ask
+ *     responses:
+ *       200:
+ *         description: AI generated answer and related posts
+ *       400:
+ *         description: Missing query parameter
+ *       500:
+ *         description: Server error
+ */
+router.get("/smart-search", postsController.smartSearch);
+
+/**
+ * @swagger
  * /posts/{id}:
  *   get:
  *     summary: Get a post by ID
